@@ -6,4 +6,8 @@
 3. command line should opened
 
 
-
+### Verify installations
+1. node
+2. docker
+3. git
+4. npm
