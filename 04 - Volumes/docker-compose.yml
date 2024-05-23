@@ -1,0 +1,78 @@
+# Volumes: Bind container folder to host folder.
+# Changes to files inside both folders will reflect to their binded folder.
+# There are three types of volumes:
+
+# 1. Host Volume:
+# Syntax: host-path:/container-path
+# Mount both paths.
+# Will duplicate each file from container to host and vice versa. 
+# Not recommended for persisting data cause host-path is different between Windows and Linux, thus if it work on a Window development, it won't work in a Linux production.
+# NOTE: On first run, the host folder probably not exists. In this case, the host folder will be created and copied into container, thus all container files will be deleted! (bug?)
+
+# 2. Named Volume:
+# Syntax: volume-name:/container-path
+# Mount container path to a host "project-name_volume-name".
+# On a Windows OS host, the mounted location is: \\wsl$\docker-desktop-data\data\docker\volumes\<project-name>_<volume-name>\_data
+# Will duplicate each file from container to host and vice versa. 
+# Will copy initial files from container to host.
+# Must be listed in a top-level "volumes:" section in the docker-compose.yml.
+# Is the most recommended technique to use.
+
+# 3. Anonymous Volume:
+# Syntax: /container-path
+# Mount container path to an anonymous host path.
+# On a Windows OS host, the mounted location is: \\wsl$\docker-desktop-data\data\docker\volumes\<random-folder-name>\_data
+# Will duplicate each file from container to host and vice versa. 
+# Will copy initial files from container to host.
+# Note: on each start, a new anonymous random folder will be created, thus the data won't be persisted!
+
+# On a databse image container there is a special folder named /docker-entrypoint-initdb.d for initialing scripts alphabetically once (.js/.sh/.sql).
+# Any script copied DIRECTLY to it (not to sub-folders) will run once - on volume creation. Thus a good usage is via Host Volume, e.g: ./Database:/docker-entrypoint-initdb.d
+
+version: "3.8"
+
+services:
+
+  # REST API service: 
+  backend-service:
+
+    # Image name to create from Dockerfile:
+    image: assaffink/kittens-image:1.0
+
+    # Build the image from specified Dockerfile location (dot = current folder):
+    build: .
+
+    # Container name:
+    container_name: kittens-container
+
+    # Port mapping (host:container):
+    ports:
+      - 81:4000
+
+    # On crash - restart container, unless manually stopped:
+    restart: unless-stopped
+
+    # REST API volumes:
+    volumes:
+
+      # Host Volume (for Windows): mount container's /app/src/1-assets/logs/errors to host's C:/ErrorLogs:
+      - C:/ErrorLogs:/app/src/1-assets/logs/errors
+
+      # Named Volume: mount container's /app/src/1-assets/json to host:
+      - json-volume:/app/src/1-assets/json
+
+      # Named Volume: mount container's /app/src/1-assets/images to host:
+      - images-volume:/app/src/1-assets/images
+
+      # Anonymous Volume: mount container's /app/src/1-assets/logs/activities to host anonymous folder:
+      - /app/src/1-assets/logs/activities
+
+      # Hot-Reloading Host Volume: mount development ./src to container /app/src:
+      - ./src:/app/src
+
+# -----------------------------------------------------------------------
+
+# Named Volume list:
+volumes:
+  json-volume:
+  images-volume:

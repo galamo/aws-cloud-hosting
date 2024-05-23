@@ -1,0 +1,75 @@
+# MySQL + Node
+# Note: to watch the database through a host UI (Workbench/phpmyadmin), add port mapping to database container, e.g. 3307:3306.
+
+version: "3.8"
+
+services:
+
+  # Northwind MySQL service:
+  database-service:
+
+    # Image name to create from Dockerfile:
+    image: assaffink/northwind-database-image:1.0
+
+    # Build the image from specified Dockerfile location:
+    build: ./Database
+
+    # Container name:
+    container_name: northwind-database-container
+
+    # On crash - restart container, unless manually stopped:
+    restart: unless-stopped
+
+    # Environment variables needed by MySQL:
+    environment:
+      MYSQL_HOST: localhost # Internally for the container.
+      MYSQL_USER: Alice
+      MYSQL_PASSWORD: Wonderland
+      MYSQL_DATABASE: northwind # Case-Sensitive!
+      MYSQL_ROOT_PASSWORD: Wonderland # Needed by MySQL image.
+
+      # Named Volume for persisting MySQL from container to host:
+    volumes:
+      - northwind-volume:/var/lib/mysql
+
+# -----------------------------------------------------------------------
+
+  # REST API service: 
+  backend-service:
+
+    # On which service we're depending on (for starting/stopping order):
+    depends_on:
+      - database-service
+
+    # Image name to create from Dockerfile:
+    image: assaffink/northwind-backend-image:1.0
+
+    # Build the image from specified Dockerfile location:
+    build: ./Backend
+
+    # Container name:
+    container_name: northwind-backend-container
+
+    # Port mapping (host:container):
+    ports:
+      - 81:4000
+
+    # On crash - restart container, unless manually stopped:
+    restart: unless-stopped
+
+    # Hot-Reloading Host Volume: mount development ./src to container /app/src:
+    volumes:
+      - ./Backend/src:/app/src
+
+    # Overriding environment variables needed by the dockerized REST API:
+    environment:
+      MYSQL_HOST: database-service # Above database service name is the database computer name in a container network created by docker, thus the backend can connect directly to the database using "database-service:3306".
+      MYSQL_USER: Alice
+      MYSQL_PASSWORD: Wonderland
+      MYSQL_DATABASE: northwind
+
+# -----------------------------------------------------------------------
+
+# Named Volume list:
+volumes:
+  northwind-volume:

@@ -1,0 +1,64 @@
+# MongoDB + Node.
+# Note: to watch the database through a host UI (Compass/Robo), add port mapping to database container, e.g: 27018:27017.
+
+version: "3.8"
+
+services:
+
+  # Northwind MongoDB service:
+  database-service:
+
+    # Image name to create from Dockerfile:
+    image: assaffink/northwind-database-image:1.0
+
+    # Build the image from specified Dockerfile location:
+    build: ./Database
+    
+    # Container name:
+    container_name: northwind-database-container
+
+    # On crash - restart container, unless manually stopped:
+    restart: unless-stopped
+
+    # Named Volume for persisting MongoDB from container to host:
+    volumes:
+      - northwind-volume:/data/db
+
+# -----------------------------------------------------------------------
+
+  # REST API service:
+  backend-service:
+
+    # On which service we're depending on (for starting/stopping order):
+    depends_on: 
+      - database-service
+
+    # Image name to create from Dockerfile:
+    image: assaffink/northwind-backend-image:1.0
+
+    # Build the image from specified Dockerfile location:
+    build: ./Backend
+
+    # Container name:
+    container_name: northwind-backend-container
+
+    # Port mapping (host:container):
+    ports:
+      - 81:4000
+
+    # On crash - restart container, unless manually stopped:
+    restart: unless-stopped
+
+    # Hot-Reloading Host Volume: mount development ./src to container /app/src:
+    volumes:
+      - ./Backend/src:/app/src
+
+    # Overriding environment variables needed by the dockerized REST API:
+    environment:
+      MONGODB_CONNECTION_STRING: mongodb://Alice:Wonderland@database-service:27017/northwind # Above database service name is the database computer name in a container network created by docker, thus the backend can connect directly to the database using "database-service:27017".
+
+# -----------------------------------------------------------------------
+
+# Named Volume list:
+volumes:
+  northwind-volume:

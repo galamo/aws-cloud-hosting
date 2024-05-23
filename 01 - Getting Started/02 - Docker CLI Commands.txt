@@ -1,0 +1,65 @@
+Auth:
+  docker login					Log in to docker registry.
+  docker logout					Logout from docker registry.
+
+Images:
+  docker build -t <image> .			Build an image from a Dockerfile located in the current directory (last dot).
+  docker images					Display image list.
+  docker images -q				Display image IDs (q = quiet).
+  docker image rm <image>			Remove given image if not in use.
+  docker image rm <image>			Remove given image if not in use.
+  docker image rm $(docker images -q)		Remove non-used images. Work on PS/Git terminals, not on CMD.
+  docker push <image>				Upload given image to repository.
+  docker pull <image>				Pull given image from repository.
+
+Containers: 
+  docker ps					Display running containers.
+  docker ps -a					Display all containers.
+  docker ps -a -q 				Display container IDs.
+  docker create <image>				Create a random-name container, running given image.
+  docker create --name <container> <image>	Create a named container, running given image.
+  docker start <container>			Start given container in a detached mode (free terminal).
+  docker stop <container>			Stop given container.
+  docker rm <container>			 	Remove given non-running container (--force to remove if running).
+  docker rm $(docker ps -a -q)			Remove non-running containers (--force to remove all). Work on PS/Git terminals, not on CMD.
+  docker run <image>				Create/start a random-name container with given image in a non-detached mode (busy terminal). If image not found, will try to download it.
+  docker run <image> --name <container> -d	Create/start given with given image in a detached mode. If image not found, will try to download it.
+  docker status					Show running containers status.
+
+Volumes:
+  docker volume ls				Display volumes.
+  docker volume ls -q				Display volume IDs.
+  docker volume rm <volume>			Remove given non-used volume.
+  docker volume rm $(docker volume ls -q)	Remove non-used volumes. Work on PS/Git terminals, not on CMD.
+
+Network: 
+  docker network ls				Display networks.
+  docker network ls -q				Display network IDs.
+  docker network create <network>		Create a new network.
+
+Debugging: 
+  docker logs <container>			Display given container logs.
+  docker exec -it <container> /bin/bash		Open bash terminal inside given running container (-it = interactive terminal).
+  docker exec -it <container> sh		Open shell terminal inside given running container.
+
+Docker Compose:
+  docker compose build				Build images specified in current docker-compose.yml file.
+  docker compose build --no-cache		Build images specified in current docker-compose.yml file, without using cached layers.
+  docker compose up -d				Run current docker-compose.yml file in a detached mode.
+  docker compose up -d --build			Build images and run current docker-compose.yml file in a detached mode.
+  docker compose ps				Display current docker-compose.yml running containers.
+  docker compose down				Stop and remove current docker-compose.yml running containers.
+  docker compose -f <file-name.yml> <command>	Run specify command on given docker-compose.yml file.
+  docker compose logs				Display logs from current docker-compose.yml file containers.
+  docker compose push				Push images specified in current docker-compose.yml file to repository.
+  docker compose pull				Pull images specified in current docker-compose.yml file from repository.
+
+Docker Machine:
+  Website: 					https://github.com/docker/machine/releases
+  Install on Windows using Git Bash terminal:	if [[ ! -d "$HOME/bin" ]]; then mkdir -p "$HOME/bin"; fi && curl -L https://github.com/docker/machine/releases/download/v0.16.2/docker-machine-Windows-x86_64.exe > "$HOME/bin/docker-machine.exe" && chmod +x "$HOME/bin/docker-machine.exe"
+  Create a new machine on DigitalOcean:		docker-machine create --driver digitalocean --digitalocean-access-token <token> --digitalocean-image ubuntu-20-04-x64 <machine>
+  eval $(docker-machine env <machine>)		Connect local terminal to given remote machine. Any docker command on local terminal will be delivered to the remote machine.
+  docker-machine ls				Display remote machines.
+  docker-mathine stop <machine>			Stop remote machine.
+  docker-mathine rm <machine>			Remove remote machine (--force removes without user confirmation + ignore errors).
+  docker-machine ssh <machine>			Create a SSH (Secure Shell) to given remote machine. Local terminal "becomes" a remote terminal, as if we're phisically on remote machine.

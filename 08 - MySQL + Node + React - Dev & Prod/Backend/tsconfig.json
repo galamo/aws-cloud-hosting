@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "removeComments": true,
+        "target": "ES6",
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "outDir": "build", 
+        "module": "CommonJS"
+    }
+}

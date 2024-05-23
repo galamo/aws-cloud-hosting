@@ -1,0 +1,103 @@
+# Publish MySQL + Node + React as three separate containers using Docker production files.
+# Note: to watch the database through a host UI (Workbench/phpmyadmin), add port mapping to database container, e.g. 3307:3306.
+# Run without rebuilding images:  docker compose -f docker-compose.prod.yml up -d
+# Run with rebuilding images:     docker compose -f docker-compose.prod.yml up -d --build
+# Stop and delete containers:     docker compose down
+
+version: "3.8"
+
+services:
+
+  # Northwind MySQL service:
+  database-service:
+
+    # Image name to create from Dockerfile:
+    image: assaffink/northwind-database-image:1.0
+
+    # Build the image from specified Dockerfile location:
+    build: ./Database
+
+    # Container name:
+    container_name: northwind-database-container
+
+    # On crash - restart container, unless manually stopped:
+    restart: unless-stopped
+
+    # Environment variables needed by MySQL:
+    environment:
+      MYSQL_HOST: localhost # Internally for the container.
+      MYSQL_USER: Alice
+      MYSQL_PASSWORD: Wonderland
+      MYSQL_DATABASE: northwind # Case-Sensitive!
+      MYSQL_ROOT_PASSWORD: Wonderland # Needed by MySQL image.
+
+    # Named Volume for persisting MySQL from container to host:
+    volumes:
+      - northwind-volume:/var/lib/mysql
+
+# -----------------------------------------------------------------------
+
+  # REST API service: 
+  backend-service:
+
+    # On which service we're depending on (for starting/stopping order):
+    depends_on: 
+      - database-service
+
+    # Image name to create from Dockerfile:
+    image: assaffink/northwind-backend-image:1.0
+
+    # Build the image from specified Dockerfile.prod location:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile.prod
+
+    # Container name:
+    container_name: northwind-backend-container
+
+    # Port mapping (host:container), both the same so frontend will work same when running with or without docker:
+    ports:
+      - 81:4000
+
+    # On crash - restart container, unless manually stopped:
+    restart: unless-stopped
+
+    # Overriding environment variables needed by the dockerized REST API:
+    environment:
+      MYSQL_HOST: database-service # Above database service name is the database computer name in a container network created by docker, thus the backend can connect directly to the database using "database-service:3306".
+      MYSQL_USER: Alice
+      MYSQL_PASSWORD: Wonderland
+      MYSQL_DATABASE: northwind
+
+# -----------------------------------------------------------------------
+
+  # Northwind frontend service:
+  frontend-service:
+
+    # On which service we're depending on (starting/stopping order):
+    depends_on:
+      - backend-service
+
+    # Image name to create from Dockerfile:
+    image: assaffink/northwind-frontend-image:1.0
+
+    # Build the image from specified Dockerfile.prod location:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.prod
+    
+    # Container name:
+    container_name: northwind-frontend-container
+
+    # Port mapping (host:container):
+    ports:
+      - 80:80 # Nginx exposes our website on port 80, and we also want to expose react container on port 80.
+
+    # On crash - restart container, unless manually stopped:
+    restart: unless-stopped
+
+# -----------------------------------------------------------------------
+
+# Named Volume list:
+volumes:
+  northwind-volume:

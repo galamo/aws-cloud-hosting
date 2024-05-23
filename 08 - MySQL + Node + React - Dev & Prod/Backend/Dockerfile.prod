@@ -1,0 +1,46 @@
+# Multi-stage builds: Dockerfile containing multiple stage builds which is needed due to different images required for every stage.
+
+# First stage - inherit current image from an Alpine image containing node:
+FROM node:20-alpine3.19 AS compilation-stage
+
+# Install typescript compiler globally for compiling TypeScript to JavaScript:
+RUN npm i -g typescript
+
+# Create a temporary empty directory for project files and set it as the Current Directory:
+WORKDIR /tmp
+
+# Copy local package.json & package-lock.json into /tmp:
+COPY package*.json /tmp
+
+# Install npm dependencies & devDependencies (required by TypeScript compiler):
+RUN npm i
+
+# Copy project local files (first dot) into /tmp:
+COPY . /tmp
+
+# Compile project resides in /tmp (WORKDIR) which generates JavaScript files inside /tmp/build as stated in tsconfig.json.
+# Note: tsconfig.json needs the "module": "CommonJS" property for handling TypeScript modules.
+RUN tsc
+
+# -----------------------------------------------------------------------
+
+# Second stage - will run after first stage and will overrun it after completion:
+FROM node:20-alpine3.19 AS production-stage
+
+# Create an empty directory for project files and set it as the Current Directory:
+WORKDIR /app
+
+# Copy package.json & package-lock.json from previous stage's /tmp folder into /app:
+COPY --from=compilation-stage /tmp/package*.json /app
+
+# Copy .env from previous stage's /tmp folder into /app:
+COPY --from=compilation-stage /tmp/.env /app
+
+# Copy JavaScript files from previous stage's /tmp/build folder into /app:
+COPY --from=compilation-stage /tmp/build /app
+
+# Install npm dependencies (without devDependencies):
+RUN npm i --omit=dev
+
+# Execute 'node /app/app.js' inside /app (WORKDIR) when container starts ("npm start" won't work cause it contains nodemon + ts-node starting command):
+ENTRYPOINT node /app/app.js

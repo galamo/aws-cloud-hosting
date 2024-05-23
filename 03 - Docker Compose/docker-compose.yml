@@ -1,0 +1,32 @@
+# docker-compose: centralizing docker commands in a YAML file (Yaml Ain't Markup Language).
+# Can describe multiple containers.
+
+# Build (but don't run) specified images:                         docker compose build
+# Build specified images if not exist + create + run container:   docker compose up -d
+# Build specified images even if exists + create + run container: docker compose up -d --build
+# Stop and remove containers run using current file:              docker compose down
+# Push all specified images to Docker Hub:                        docker compose push
+# Pull (but don't run) all specified images from Docker Hub:      docker compose pull
+
+version: "3.8"
+
+services:
+
+  # REST API service: 
+  backend-service:
+
+    # Image name to create from Dockerfile:
+    image: assaffink/kittens-image:1.0
+
+    # Build the image from specified Dockerfile location (dot = current folder):
+    build: .
+
+    # Container name to create:
+    container_name: kittens-container
+
+    # Port mapping (host:container):
+    ports:
+      - 81:4000
+
+    # On crash - restart container, unless manually stopped:
+    restart: unless-stopped
