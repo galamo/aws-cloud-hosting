@@ -1,4 +1,24 @@
-# AWS Cloud Hosting
+# Fullstack cloud Labs
+
+## General
+
+In this lesson we will learn how to access a remote machine that supplied us as a infrastructure service from cloud (aws).
+we will learn to work with the machine CLI.
+using the different access capabilities based on the browser: CLI & Vscode we will write, distribute, deploy & execute our code on a remote machine.
+
+### Before Starting
+
+Each Student will receive a machine IP & credentials which will be dedicated for the student during the lessons.
+
+## Lab 1
+
+#### Writing the code straight on the machine
+
+1. for testing our environemtn
+
+### Docker commands
+
+- [Docker CLI](./01%20-%20Getting%20Started/readme.md)
 
 ## Access Machine
 

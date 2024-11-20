@@ -5,7 +5,7 @@ dotenv.config();
 
 const server = express();
 
-server.get("/", (request: Request, response: Response) => {
+server.get("/health-check", (request: Request, response: Response) => {
     response.send("<h1>Welcome to cute kittens REST API (Testing Dockerfile)</h1>");
 });
 
