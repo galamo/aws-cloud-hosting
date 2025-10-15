@@ -12,23 +12,11 @@
 # Push image to the registry:       docker push kittens-image
 # Pull image from registry:         docker pull kittens-image
 
-# Inherit current image from an Alpine image containing node (for latest versions use node:alpine, but it is highly not recommended cause it might break in some future version):
-FROM node:20-alpine3.19
+FROM node:22-alpine3.19
 
-# Install ts-node globally for running typescript:
-RUN npm i -g ts-node
-
-# Create an empty directory for project files and set it as the Current Directory:
 WORKDIR /app
-
-# Copy local package.json & package-lock.json into /app:
 COPY package*.json /app
-
-# Install npm dependencies & devDependencies:
-RUN npm i
-
-# Copy project local files (first dot) into /app:
 COPY . /app
-
-# Execute 'npm start' inside /app (WORKDIR) when container starts:
-ENTRYPOINT npm start
+RUN npm i
+RUN npm run compile
+CMD ["npm", "start"]
