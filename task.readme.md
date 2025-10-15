@@ -1,8 +1,6 @@
-Here’s a clear and structured **README / Lab Instructions** you can use for your Full Stack Developers Lab 👇
 
----
 
-# 🧪 Full Stack Developers Lab  Loan Request Application
+#  Full Stack Developers Lab  Loan Request Application
 
 ## 📋 Overview
 
